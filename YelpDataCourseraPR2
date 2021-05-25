@@ -1,11 +1,31 @@
 Data Scientist Role Play: Profiling and Analyzing the Yelp Dataset Coursera Worksheet
 
-This is a 2-part assignment. In the first part, you are asked a series of questions that will help you profile and understand the data just like a data scientist would. For this first part of the assignment, you will be assessed both on the correctness of your findings, as well as the code you used to arrive at your answer. You will be graded on how easy your code is to read, so remember to use proper formatting and comments where necessary.
+This is a 2-part assignment. In the first part, you are asked a series of
+questions that will help you profile and understand the data just like a
+data scientist would. For this first part of the assignment, you will be
+assessed both on the correctness of your findings, as well as the code
+you used to arrive at your answer. You will be graded on how easy your
+code is to read, so remember to use proper formatting and comments where
+necessary.
 
-In the second part of the assignment, you are asked to come up with your own inferences and analysis of the data for a particular research question you want to answer. You will be required to prepare the dataset for the analysis you choose to do. As with the first part, you will be graded, in part, on how easy your code is to read, so use proper formatting and comments to illustrate and communicate your intent as required.
+In the second part of the assignment, you are asked to come up with your
+own inferences and analysis of the data for a particular research question
+you want to answer. You will be required to prepare the dataset for the
+analysis you choose to do. As with the first part, you will be graded,
+in part, on how easy your code is to read, so use proper formatting and
+comments to illustrate and communicate your intent as required.
 
-For both parts of this assignment, use this "worksheet." It provides all the questions you are being asked, and your job will be to transfer your answers and SQL coding where indicated into this worksheet so that your peers can review your work. You should be able to use any Text Editor (Windows Notepad, Apple TextEdit, Notepad ++, Sublime Text, etc.) to copy and paste your answers. If you are going to use Word or some other page layout application, just be careful to make sure your answers and code are lined appropriately.
-In this case, you may want to save as a PDF to ensure your formatting remains intact for you reviewer.
+For both parts of this assignment, use this "worksheet." It provides all
+the questions you are being asked, and your job will be to transfer your
+answers and SQL coding where indicated into this worksheet so that your
+peers can review your work. You should be able to use any Text Editor
+(Windows Notepad, Apple TextEdit, Notepad ++, Sublime Text, etc.) to
+copy and paste your answers. If you are going to use Word or some other
+page layout application, just be careful to make sure your answers and
+code are lined appropriately.
+
+In this case, you may want to save as a PDF to ensure your formatting remains
+intact for you reviewer.
 
 
 
@@ -60,7 +80,9 @@ xi. user table = 10000
 	
 
 
-2. Find the total distinct records by either the foreign key or primary key for each table. If two foreign keys are listed in the table, please specify which foreign key.
+2. Find the total distinct records by either the foreign key or primary key
+for each table. If two foreign keys are listed in the table, please specify
+which foreign key.
 
 i. Business = 10000
 	SELECT COUNT(DISTINCT bz.id)
@@ -155,7 +177,8 @@ Note: Primary Keys are denoted in the ER-Diagram with a yellow key icon.
 	
 
 	
-4. For each table and column listed below, display the smallest (minimum), largest (maximum), and average (mean) value for the following fields:
+4. For each table and column listed below, display the smallest (minimum),
+largest (maximum), and average (mean) value for the following fields:
 
 	i. Table: Review, Column: Stars
 	
@@ -422,44 +445,141 @@ Copy and Paste the Resulting Table Below (2 columns – star rating and count):
 
 Part 2: Inferences and Analysis
 
-1. Pick one city and category of your choice and group the businesses in that city or category by their overall star rating. Compare the businesses with 2-3 stars to the businesses with 4-5 stars and answer the following questions. Include your code.
-	
-i. Do the two groups you chose to analyze have a different distribution of hours?
+1. Pick one city and category of your choice and group the businesses in that city
+or category by their overall star rating. Compare the businesses with 2-3 stars to
+the businesses with 4-5 stars and answer the following questions. Include your code.
 
+City: Phoenix
+Category: Restaurants
+
+i. Do the two groups you chose to analyze have a different distribution of hours?
+Answer: Yes! they have different distribution.
 
 ii. Do the two groups you chose to analyze have a different number of reviews?
+Answer: Yes! both the groups have different number of reviews
          
-         
-iii. Are you able to infer anything from the location data provided between these two groups? Explain.
+iii. Are you able to infer anything from the location data provided between these
+two groups? Explain.
+Answer: No! The location data provided doesn't provide any useful information
 
 SQL code used for analysis:
 
+SELECT bz.name as Business_name
+    , bz.city as City
+    , bz.postal_code
+    , SUM(bz.review_count) as No_of_reviews
+    , ct.category as Category
+    , hrs.hours as Hours
+    , CASE
+         WHEN bz.stars BETWEEN 2.0 AND 3.0 THEN '2-3 stars'
+         WHEN bz.stars BETWEEN 4.0 AND 5.0 THEN '4-5 stars'
+     END AS Star_category
+FROM (
+    (
+        business bz INNER JOIN category ct 
+        ON bz.id = ct.business_id
+    )
+    INNER JOIN hours hrs
+    ON bz.id = hrs.business_id
+)
+WHERE (bz.city == 'Phoenix')
+    AND (ct.category == 'Restaurants')
+    AND ((bz.stars BETWEEN 2.0 AND 3.0) OR (bz.stars BETWEEN 4.0 AND 5.0))
+GROUP BY Hours, Star_category
+ORDER BY bz.stars;
 		
 		
-2. Group business based on the ones that are open and the ones that are closed. What differences can you find between the ones that are still open and the ones that are closed? List at least two differences and the SQL code you used to arrive at your answer.
+2. Group business based on the ones that are open and the ones that are closed.
+What differences can you find between the ones that are still open and the ones
+that are closed? List at least two differences and the SQL code you used to
+arrive at your answer.
 		
-i. Difference 1:
+i. Difference 1: They have different no of reviews. This information is retrieved
+using the average.
          
-         
-ii. Difference 2:
-         
-         
+ii. Difference 2: They also have different no of star rating. This information is
+retrieved using the average.
          
 SQL code used for analysis:
 
-	
-	
-3. For this last part of your analysis, you are going to choose the type of analysis you want to conduct on the Yelp dataset and are going to prepare the data for analysis.
+SELECT bz.is_open
+    , CASE
+        WHEN bz.is_open == 1 THEN 'OPEN'
+        WHEN bz.is_open == 0 THEN 'CLOSED'
+      END as isOPEN
+    , AVG(review_count) as Average_reviews
+    , AVG(bz.stars) as Average_star_rating
+FROM business bz 
+GROUP BY isOPEN;
 
-Ideas for analysis include: Parsing out keywords and business attributes for sentiment analysis, clustering businesses to find commonalities or anomalies between them, predicting the overall star rating for a business, predicting the number of fans a user will have, and so on. These are just a few examples to get you started, so feel free to be creative and come up with your own problem you want to solve. Provide answers, in-line, to all of the following:
++---------+--------+-----------------+---------------------+
+| is_open | isOPEN | Average_reviews | Average_star_rating |
++---------+--------+-----------------+---------------------+
+|       0 | CLOSED |   23.1980263158 |       3.52039473684 |
+|       1 | OPEN   |   31.7570754717 |       3.67900943396 |
++---------+--------+-----------------+---------------------+
+	
+3. For this last part of your analysis, you are going to choose the type of
+analysis you want to conduct on the Yelp dataset and are going to prepare the
+data for analysis.
+
+Ideas for analysis include: Parsing out keywords and business attributes for
+sentiment analysis, clustering businesses to find commonalities or anomalies
+between them, predicting the overall star rating for a business, predicting
+the number of fans a user will have, and so on. These are just a few examples
+to get you started, so feel free to be creative and come up with your own
+problem you want to solve. Provide answers, in-line, to all of the following:
 	
 i. Indicate the type of analysis you chose to do:
+Answer: Rate the business based on the reviews given
          
-         
-ii. Write 1-2 brief paragraphs on the type of data you will need for your analysis and why you chose that data:
-                           
+ii. Write 1-2 brief paragraphs on the type of data you will need for your
+analysis and why you chose that data:
+
+Answer: Individual reviews given by the consumer are many a times misleading.
+So to have a greater idea about how a business is doing this review will be just 
+perfect. Accumulating all the reviews into one solid number will give futuer
+cutomer to choose wisely.
+
+The data involved here will the records from business and review table.
                   
 iii. Output of your finished dataset:
-         
++----------------------------------+----------------+----------------+----------------+
+| Name_of_Business                 |          funny |         useful |           cool |
++----------------------------------+----------------+----------------+----------------+
+| 4E Kennels                       |            0.0 |            2.0 |            0.0 |
+| 5 & Diner                        |            1.0 |            1.0 |            0.0 |
+| 808 Sushi                        |            0.0 |  1.33333333333 |  1.33333333333 |
+| 99 Ranch Market                  |            2.0 |            2.0 |            2.5 |
+| A Panda Buffet                   |            0.0 |            0.0 |            0.0 |
+| AG Jeans                         |            4.0 |            3.0 |            3.0 |
+| ARA Of Madison                   |            0.0 |            0.0 |            0.0 |
+| AT&T                             |            0.0 |            1.0 |            0.0 |
+| Abuelo's                         |            0.0 |            0.0 |            0.0 |
+| Afton Tavern                     |            0.0 |            0.0 |            0.0 |
+| Ai Sushi                         |            0.0 |            0.0 |            0.0 |
+| Akahana Asian Bistro             |            0.0 |            1.0 |            1.0 |
+| Aki Da Japanese Seafood House    |            0.0 |            0.0 |            0.0 |
+| Alamo Rent A Car                 |            0.0 |            0.0 |            0.0 |
+| Albertsons                       |            4.0 |            7.0 |            3.0 |
+| Alfred Angelo Bridal             |            0.0 |            0.0 |            0.0 |
+| All In One Home Repairs          |            0.0 |            0.0 |            0.0 |
+| Amalfi Ristorante Italiano       |            0.0 |            1.0 |            0.0 |
+| America's Taco Shop              |            0.0 |            1.0 |            0.0 |
+| Angelique's Family Restaurant    |            0.0 |            1.0 |            0.0 |
+| Angelo's Pizza                   |            0.0 |            0.0 |            0.0 |
+| Anyplace Auto Repair             |            0.0 |            0.0 |            0.0 |
+| AquaKnox                         | 0.333333333333 | 0.666666666667 | 0.666666666667 |
+| Arabesque Dance & Fitness Studio |            0.0 |            0.0 |            0.0 |
+| Arbor Care Tree Service          |            0.0 |            9.0 |            7.0 |
++----------------------------------+----------------+----------------+----------------+
+(Output limit exceeded, 25 of 494 total rows shown)        
          
 iv. Provide the SQL code you used to create your final dataset:
+SELECT bz.name as Name_of_Business
+    , AVG(rv.funny) as funny
+    , AVG(rv.useful) as useful
+    , AVG(rv.cool) as cool
+FROM business bz INNER JOIN review rv
+ON bz.id = rv.business_id
+GROUP BY Name_of_Business;
